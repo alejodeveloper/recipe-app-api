@@ -1,5 +1,5 @@
 """
-app.recipe_users.test.test_models
+app.recipe_users.tests.test_models
 -------------------------------
 Tests cases for recipe_users models
 """
