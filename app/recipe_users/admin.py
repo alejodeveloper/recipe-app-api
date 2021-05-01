@@ -13,7 +13,7 @@ from . import models
 class UserAdmin(BaseUserAdmin):
     # How the list User Admin page gonna show the data
     ordering = ['id']
-    list_display = ['name', 'email']
+    list_display = ['email', 'name']
     # Fields of the single User admin page
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
