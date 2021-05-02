@@ -22,9 +22,24 @@ class UserSerializer(serializers.ModelSerializer):
         """
         Create a new user
         :param validated_data:
-        :return: User mode instance
+        :return: User model instance
         """
         return get_user_model().objects.create_user(**validated_data)
+
+    def update(self, instance, validated_data):
+        """
+        Serializer method for update recipe user
+        :param instance:
+        :param validated_data:
+        :return: User model instance
+        """
+        password = validated_data.pop('password', None)
+        updated_user = super().update(instance, validated_data)
+        if password:
+            updated_user.set_password(password)
+            updated_user.save()
+
+        return updated_user
 
 
 class AuthTokenSerializer(serializers.Serializer):

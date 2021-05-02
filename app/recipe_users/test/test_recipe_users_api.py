@@ -168,3 +168,89 @@ class TestRecipeUserPublicAPI(TestCase):
             status.HTTP_400_BAD_REQUEST
         )
         self.assertNotIn('token', test_response.data)
+
+    def test_retrieve_unauthorized_user(self):
+        """
+        Test for authentication of the users
+        :return: None
+        """
+        test_response = self.test_client.get(
+            RecipeUserTestConstants.ME_URL.value
+        )
+        self.assertEqual(
+            test_response.status_code,
+            status.HTTP_401_UNAUTHORIZED
+        )
+
+
+class TestRecipeUserAuthenticatedAPI(TestCase):
+    """
+    Test for authenticated user API calls
+    """
+
+    def setUp(self) -> None:
+        self.test_client = APIClient()
+        self.test_authenticated_user = create_user(
+            name='Test Authenticated User',
+            email='im.authenticated@test.com',
+            password='IamASuperSecuredPassword123'
+        )
+        self.test_client.force_authenticate(self.test_authenticated_user)
+
+    def test_retrieve_success_profile(self):
+        """
+        Test for retrieve successfully the profile for a logged user
+        :return: None
+        """
+        test_response = self.test_client.get(
+            RecipeUserTestConstants.ME_URL.value
+        )
+        expected_response = {
+            'name': self.test_authenticated_user.name,
+            'email': self.test_authenticated_user.email,
+        }
+
+        self.assertEqual(test_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(test_response.data, expected_response)
+
+    def test_post_me_user_not_allowed(self):
+        """
+        Test that the method POST is not allowed to the ME Url
+        :return: None
+        """
+
+        test_response = self.test_client.post(
+            RecipeUserTestConstants.ME_URL.value,
+            {}
+        )
+        self.assertEqual(
+            test_response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+    def test_update_userprofile(self):
+        """
+        Test for authenticated the recipe user
+        :return: None
+        """
+        test_payload = {'name': 'New Name', 'password': 'NewPassword'}
+
+        test_response = self.test_client.patch(
+            RecipeUserTestConstants.ME_URL.value,
+            test_payload
+        )
+
+        self.test_authenticated_user.refresh_from_db()
+
+        self.assertEqual(
+            self.test_authenticated_user.name, test_payload['name']
+        )
+        self.assertTrue(
+            self.test_authenticated_user.check_password(
+                test_payload['password']
+            )
+        )
+        self.assertEqual(
+            test_response.status_code,
+            status.HTTP_200_OK
+        )
